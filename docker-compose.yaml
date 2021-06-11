@@ -1,0 +1,36 @@
+version: '3.4'
+
+volumes:
+    influxdb_data: {}
+    grafana_data: {}
+
+services:
+
+    influxdb:
+        image: influxdb:1.8.3
+        environment: 
+          - INFLUXDB_LOGGING_LEVEL=error
+          - INFLUXDB_CONTINUOUS_QUERIES_LOG_ENABLED=false
+          - INFLUXDB_DATA_QUERY_LOG_ENABLED=false
+          - INFLUXDB_HTTP_LOG_ENABLED=false
+        volumes:
+          - influxdb_data:/var/lib/influxdb2
+        ports:
+          - "8086:8086"
+        restart: 'always'
+
+    grafana:
+        image: grafana/grafana
+        depends_on:
+            - influxdb
+        ports:
+            - 3000:3000
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning/:/etc/grafana/provisioning/
+            - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+        environment: 
+            - GF_LOG_LEVEL=error
+        links:
+            - influxdb
+        restart: always
