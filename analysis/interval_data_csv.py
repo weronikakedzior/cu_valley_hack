@@ -1,6 +1,7 @@
 from influxdb import InfluxDBClient
 from datetime import datetime, timedelta, timezone
 
+
 def get_full_interval_data(date_start: datetime, machine_name: str):
     date_end = date_start + timedelta(hours=1)
     date_start_influx = date_start.replace(tzinfo=timezone.utc).timestamp() * 1000
@@ -10,6 +11,7 @@ def get_full_interval_data(date_start: datetime, machine_name: str):
             database='machines'
         ).get_points()
     return query_result
+
 
 if __name__ == '__main__':
 
