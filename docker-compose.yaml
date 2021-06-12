@@ -71,7 +71,7 @@ services:
         build: .
         image: *img
         container_name: 'parser_worker'
-        command: [celery, worker, --app=parser_worker.app, --queues=parser_queue, --loglevel=ERROR]
+        command: [celery, worker, --app=parser_worker.app, --queues=parser_queue, --loglevel=ERROR, --concurrency=7]
         environment: *env
         links:
             - rabbitmq
