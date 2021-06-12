@@ -1,4 +1,5 @@
 import zipfile
+from celery import signature
 # from datetime import datetime
 
 from celery_base import app
@@ -28,4 +29,10 @@ def parse_day(
                 )
             )
 
-    database_insert(samples_list)
+    # database_insert.delay(samples_list)
+    signature(
+        'database_insert',
+        args=(
+            samples_list,
+        )
+    ).apply_async()

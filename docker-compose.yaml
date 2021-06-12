@@ -34,3 +34,62 @@ services:
         links:
             - influxdb
         restart: always
+
+    rabbitmq:
+        image: rabbitmq:3.8
+        environment:
+            - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log [{console,[{level,warning}]}]
+        ports:
+            - 15672:15672
+
+    data_iterator_worker:
+        build: .
+        image: &img worker
+        command: [celery, worker, --app=data_iterator_worker.app]
+        environment: &env
+            - broker_protocol=amqp
+            - broker_user=guest
+            - broker_password=guest
+            - broker_host=rabbitmq
+            - broker_port=5672
+            - CELERY_RESULT_BACKEND=rpc
+            - CELERY_WORKER_SEND_TASK_EVENTS=True
+            - influxdb_host=influxdb
+            - influx_port=8086
+            - influx_database=machines
+            - data_path=../data
+            # - C_FORCE_ROOT=true
+        depends_on:
+            - rabbitmq
+        restart: always
+        volumes: &volume
+            - ./app:/home/app
+            - ./data:/home/data
+
+    parser_worker:
+        build: .
+        image: *img
+        container_name: 'parser_worker'
+        command: [celery, worker, --app=parser_worker.app, --queues=parser_queue]
+        environment: *env
+        links:
+            - rabbitmq
+            - influxdb
+        depends_on:
+            - rabbitmq
+        volumes: *volume
+        restart: always
+
+    database_worker:
+        build: .
+        image: *img
+        container_name: 'database-worker'
+        command: [celery, worker, --app=database_worker.app, --queues=database_queue]
+        environment: *env
+        links:
+            - rabbitmq
+            - influxdb
+        depends_on:
+            - rabbitmq
+        volumes: *volume
+        restart: always

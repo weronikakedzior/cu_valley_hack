@@ -1,5 +1,6 @@
 import os
 import zipfile
+from celery import signature
 from datetime import datetime
 from typing import List
 import time
@@ -23,14 +24,20 @@ N_DAYS_PER_MACHINE = 90
 def data_iterator(sender, **kwargs):
 
     data_path = os.environ['data_path']
-    print('kupaaaaaaaaaaaaaaaaaaaa')
-    print(len(os.listdir(data_path)))
-    print('kuuuuuuuuuuuuuuuuuuuupa')
+    # print(data_path)
+    # print(os.listdir(data_path))
+    # print(os.listdir('../data'))
+
     # iterate over machines
     machines = sorted(
         os.listdir(data_path),
         reverse=True
     )
+    # machines = [
+    #     'WOS 179L', 'WOS 177L', 'WOS 176L',
+    #     'WOS 175L', 'WOS 174L', 'LK3 050L',
+    #     'LK3 048L', 'LK3 046L', 'LK3 045L'
+    # ]
     for machine in machines:
         # read only WOS machines
         if not machine.startswith('WOS'):
@@ -60,14 +67,23 @@ def data_iterator(sender, **kwargs):
                     key=lambda x: x.split('.zip')[0][-2:]
                 )[::-1]
                 for day_zipfile in days:
+                    print(days)
                     if not day_zipfile.endswith('.zip'):
                         continue
                     counter += 1
                     if counter <= N_DAYS_PER_MACHINE:
                         print(machine, year, month, day_zipfile)
-                        parse_day.delay(
-                            zip_path=os.path.join(
-                                data_path, machine, year, month, day_zipfile
-                            ),
-                            machine_name=machine
+                        zip_path = os.path.join(
+                            data_path, machine, year, month, day_zipfile
                         )
+                        # parse_day.delay(
+                        #     zip_path=zip_path,
+                        #     machine_name=machine
+                        # )
+                        signature(
+                            'parse_day',
+                            args=(
+                                zip_path,
+                                machine_name,
+                            )
+                        ).apply_async()
