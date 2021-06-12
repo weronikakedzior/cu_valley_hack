@@ -36,16 +36,17 @@ services:
         restart: always
 
     rabbitmq:
-        image: rabbitmq:3.8
+        image: rabbitmq:3-management-alpine
         environment:
             - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log [{console,[{level,warning}]}]
         ports:
+            - 5672:5672
             - 15672:15672
 
     data_iterator_worker:
         build: .
         image: &img worker
-        command: [celery, worker, --app=data_iterator_worker.app]
+        command: [celery, worker, --app=data_iterator_worker.app, --queues=data_iterator_queue, --loglevel=ERROR]
         environment: &env
             - broker_protocol=amqp
             - broker_user=guest
@@ -54,7 +55,7 @@ services:
             - broker_port=5672
             - CELERY_RESULT_BACKEND=rpc
             - CELERY_WORKER_SEND_TASK_EVENTS=True
-            - influxdb_host=influxdb
+            - influx_host=influxdb
             - influx_port=8086
             - influx_database=machines
             - data_path=../data
@@ -70,7 +71,7 @@ services:
         build: .
         image: *img
         container_name: 'parser_worker'
-        command: [celery, worker, --app=parser_worker.app, --queues=parser_queue]
+        command: [celery, worker, --app=parser_worker.app, --queues=parser_queue, --loglevel=ERROR]
         environment: *env
         links:
             - rabbitmq
@@ -84,7 +85,7 @@ services:
         build: .
         image: *img
         container_name: 'database-worker'
-        command: [celery, worker, --app=database_worker.app, --queues=database_queue]
+        command: [celery, worker, --app=database_worker.app, --queues=database_queue, --loglevel=ERROR, --concurrency=1]
         environment: *env
         links:
             - rabbitmq

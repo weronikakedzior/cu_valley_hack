@@ -25,7 +25,7 @@ class InfluxDB:
     def save_samples(self, samples: List[Sample]):
         parsed_samples = []
         for sample in samples:
-            parsed_samples.append(self.parse_sample(sample))
+            parsed_samples.append(self._parse_sample(sample))
         self.client.write_points(parsed_samples)
 
     def _parse_sample(self, sample: Sample):

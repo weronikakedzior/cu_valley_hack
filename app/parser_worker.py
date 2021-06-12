@@ -9,12 +9,16 @@ from logger import get_logger
 from parser import parse_csv
 
 
-@app.task(bind=True, name='parse_day')  #, queue="parser", serializer='pickle')
+logger = get_logger('parser-worker')
+logger.propagate = False
+
+
+@app.task(bind=True, name='parse_day', queue="parser_queue", serializer='pickle')
 def parse_day(
+    self,
     zip_path: str,
     machine_name: str
 ):
-    logger = get_logger('parser-worker')
     logger.info('Starting parsing day for machine ', machine_name)
 
     with zipfile.ZipFile(zip_path, 'r') as f:

@@ -19,6 +19,7 @@ os.environ['CELERY_BROKER_URL'] = ''.join([
 app = Celery()
 app.conf.update({
     'task_routes': {
+        'data_iterator': {'queue': 'data_iterator_queue'},
         'parse_day': {'queue': 'parser_queue'},
         'database_insert': {'queue': 'database_queue'}
     },
@@ -26,3 +27,5 @@ app.conf.update({
     'result_serializer': 'pickle',
     'accept_content': ['pickle']
 })
+
+# 'CELERY_REDIRECT_STDOUTS_LEVEL': 'INFO',

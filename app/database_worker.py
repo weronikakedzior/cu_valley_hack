@@ -7,9 +7,13 @@ from database import InfluxDB
 from logger import get_logger
 
 
-@app.task(bind=True, name='database_insert')
-# serializer='pickle', queue='database_queue')
+logger = get_logger('database-worker')
+logger.propagate = False
+
+
+@app.task(bind=True, name='database_insert', serializer='pickle', queue='database_queue')
 def database_insert(
+    self,
     samples: List[Sample]
 ):
 
@@ -21,9 +25,9 @@ def database_insert(
 
     influx_client.configure_database()
 
-    logger = get_logger('database-worker')
-    logger.info(
-        'Inserting to database ', str(len(samples)), ' samples.'
-    )
+    # logger.info(
+    #     'Inserting to database ', str(len(samples)), ' samples.'
+    # )
+    print('Inserting to database ', str(len(samples)), ' samples.')
 
     influx_client.save_samples(samples)

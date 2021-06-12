@@ -20,13 +20,11 @@ logger.propagate = False
 N_DAYS_PER_MACHINE = 90
 
 
-@app.on_after_configure.connect
-def data_iterator(sender, **kwargs):
+# @app.on_after_configure.connect
+@app.task(bind=True, name='data_iterator', queue="data_iterator_queue", serializer='pickle')
+def data_iterator(self):
 
     data_path = os.environ['data_path']
-    # print(data_path)
-    # print(os.listdir(data_path))
-    # print(os.listdir('../data'))
 
     # iterate over machines
     machines = sorted(
@@ -67,12 +65,12 @@ def data_iterator(sender, **kwargs):
                     key=lambda x: x.split('.zip')[0][-2:]
                 )[::-1]
                 for day_zipfile in days:
-                    print(days)
+                    # print(days)
                     if not day_zipfile.endswith('.zip'):
                         continue
                     counter += 1
                     if counter <= N_DAYS_PER_MACHINE:
-                        print(machine, year, month, day_zipfile)
+                        # print(machine, year, month, day_zipfile)
                         zip_path = os.path.join(
                             data_path, machine, year, month, day_zipfile
                         )
@@ -84,6 +82,9 @@ def data_iterator(sender, **kwargs):
                             'parse_day',
                             args=(
                                 zip_path,
-                                machine_name,
+                                machine,
                             )
                         ).apply_async()
+
+
+data_iterator.apply_async()
