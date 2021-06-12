@@ -1,7 +1,10 @@
-import csv
 import os
 import zipfile
+from datetime import datetime
 from typing import List
+import time
+
+from tqdm import tqdm
 
 from src.data import Sample
 from src.database import InfluxDB
@@ -12,9 +15,11 @@ def save_samples(
     influx_client: InfluxDB,
     samples: List[Sample]
 ):
+    parsed_samples = []
     for sample in samples:
-        parsed_sample = influx_client.parse_sample(sample)
-        influx_client.save_data(parsed_sample)
+        parsed_samples.append(influx_client.parse_sample(sample))
+    influx_client.save_data(parsed_samples)
+    print(datetime.now())
 
 
 if __name__ == '__main__':
@@ -37,6 +42,7 @@ if __name__ == '__main__':
         # read only WOS machines
         if not machine.startswith('WOS'):
             continue
+        print('Reading machine ', machine)
         # iterate over years
         for year in os.listdir(
             os.path.join(data_path, machine)
@@ -46,9 +52,10 @@ if __name__ == '__main__':
                 os.path.join(data_path, machine, year)
             ):
                 # iterate over days
-                for day_zipfile in os.listdir(
+                for day_zipfile in tqdm(os.listdir(
                     os.path.join(data_path, machine, year, month)
-                ):
+                )):
+                    start_time = time.time()
                     # read only zip files
                     if not day_zipfile.endswith('.zip'):
                         continue
@@ -56,7 +63,6 @@ if __name__ == '__main__':
                     zip_path = os.path.join(
                         data_path, machine, year, month, day_zipfile
                     )
-
                     with zipfile.ZipFile(zip_path, 'r') as f:
                         first = True
                         for name in f.namelist():
@@ -67,4 +73,5 @@ if __name__ == '__main__':
                                 csv_path=name
                             )
                             save_samples(influx_client, samples_list)
-                            # print(samples_list)
+                    exec_time = time.time() - start_time
+                    # print(f'exec_time: {exec_time}')

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from .data import Sample, WOSSample
+from data import Sample, WOSSample
 
 
 def parse_csv(
