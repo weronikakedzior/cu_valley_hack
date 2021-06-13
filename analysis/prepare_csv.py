@@ -4,6 +4,7 @@ import pandas as pd
 from influxdb import InfluxDBClient
 from tqdm import tqdm
 
+
 if __name__ == '__main__':
 
     out_dir = 'analysis/csv/'

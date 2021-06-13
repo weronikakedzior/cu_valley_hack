@@ -14,7 +14,7 @@ services:
           - INFLUXDB_DATA_QUERY_LOG_ENABLED=false
           - INFLUXDB_HTTP_LOG_ENABLED=false
         volumes:
-          - influxdb_data:/var/lib/influxdb2
+          - influxdb_data:/var/lib/influxdb
         ports:
           - "8086:8086"
         restart: 'always'

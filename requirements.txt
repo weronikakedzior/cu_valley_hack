@@ -1,3 +1,6 @@
 celery==4.3.1
 influxdb
 tqdm
+pandas
+sklearn
+alibi_detect

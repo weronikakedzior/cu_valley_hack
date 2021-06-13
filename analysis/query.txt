@@ -1,1 +1,0 @@
-SELECT median("ENGTPS") FROM "WOS___179L" WHERE time >= 1591951340495ms and time <= now() GROUP BY time(1h) fill(null)
