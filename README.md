@@ -8,7 +8,7 @@ The task was to prepare data analysis from SMG machines records in order to incr
 
 ### Team
 * M. Cielinski
-* W. Pawlak
+* W. Kędzior
 * K. Romański
 
 ### Result
